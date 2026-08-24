@@ -10,6 +10,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 WAREHOUSE_PATH = ROOT / "warehouse" / "bi_system.sqlite"
+MARTS_DIR = ROOT / "data" / "marts"
 LOGO_PATH = ROOT / "assets" / "right_to_dream_logo.png"
 
 BRAND = {
@@ -81,10 +82,15 @@ pio.templates.default = "rtd_powerbi"
 
 @st.cache_data
 def read_table(table_name: str, warehouse_mtime: float) -> pd.DataFrame:
-    if not WAREHOUSE_PATH.exists():
-        return pd.DataFrame()
-    with sqlite3.connect(WAREHOUSE_PATH) as con:
-        return pd.read_sql_query(f"select * from {table_name}", con)
+    if WAREHOUSE_PATH.exists():
+        with sqlite3.connect(WAREHOUSE_PATH) as con:
+            return pd.read_sql_query(f"select * from {table_name}", con)
+
+    csv_path = MARTS_DIR / f"{table_name}.csv"
+    if csv_path.exists():
+        return pd.read_csv(csv_path)
+
+    return pd.DataFrame()
 
 
 def add_theme() -> None:
