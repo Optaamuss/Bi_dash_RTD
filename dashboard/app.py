@@ -413,21 +413,24 @@ if page == "Command Centre":
 
 elif page == "Recruitment Landscape":
     map_data = filtered.dropna(subset=["latitude", "longitude"])
-    st.plotly_chart(
-        px.scatter_mapbox(
-            map_data,
-            lat="latitude",
-            lon="longitude",
-            color="region",
-            size="recruitment_success_index",
-            hover_name="player_name",
-            hover_data=["hometown", "entry_club", "entry_age", "football_rating", "development_velocity"],
-            zoom=5,
-            height=640,
-            title="Recruitment Geography: Player Locations",
-        ).update_layout(mapbox_style="carto-darkmatter"),
-        use_container_width=True,
-    )
+    if map_data.empty:
+        st.info("No player records with valid latitude and longitude are available for the current filters.")
+    else:
+        st.plotly_chart(
+            px.scatter_mapbox(
+                map_data,
+                lat="latitude",
+                lon="longitude",
+                color="region",
+                size="recruitment_success_index",
+                hover_name="player_name",
+                hover_data=["hometown", "entry_club", "entry_age", "football_rating", "development_velocity"],
+                zoom=5,
+                height=640,
+                title="Recruitment Geography: Player Locations",
+            ).update_layout(mapbox_style="carto-darkmatter"),
+            use_container_width=True,
+        )
     st.dataframe(region_concentration.sort_values("players", ascending=False), use_container_width=True, hide_index=True)
     hhi = (region_concentration["share"] ** 2).sum()
     insight(
@@ -439,6 +442,9 @@ elif page == "Recruitment Landscape":
 
 elif page == "Recruitment Opportunities":
     region_sources = source_effectiveness[source_effectiveness["source_type"].eq("region")].copy()
+    if region_sources.empty:
+        st.info("No regional source effectiveness records are available.")
+        st.stop()
     benchmark = region_sources["recruitment_success_index"].median()
     region_sources["opportunity_zone"] = "Limited Evidence"
     region_sources.loc[(region_sources["players_recruited"] >= 8) & (region_sources["recruitment_success_index"] >= benchmark), "opportunity_zone"] = "Protect & Invest"
@@ -460,8 +466,11 @@ elif page == "Recruitment Opportunities":
     st.dataframe(region_sources.sort_values("recruitment_success_index", ascending=False), use_container_width=True, hide_index=True)
 
 elif page == "Source Effectiveness":
-    source_type = st.segmented_control("Source Type", ["region", "hometown", "entry_club", "nationality"], default="region")
+    source_type = st.radio("Source Type", ["region", "hometown", "entry_club", "nationality"], horizontal=True)
     table = source_effectiveness[source_effectiveness["source_type"].eq(source_type)].sort_values("recruitment_success_index", ascending=False)
+    if table.empty:
+        st.info("No source effectiveness records are available for this source type.")
+        st.stop()
     st.plotly_chart(
         px.bar(table.head(15), x="recruitment_success_index", y="source_name", orientation="h", color="evidence_strength", title="Recruitment Success Index by Source"),
         use_container_width=True,
@@ -471,6 +480,9 @@ elif page == "Source Effectiveness":
 
 elif page == "Player Development":
     dev = filtered.copy()
+    if dev.empty:
+        st.info("No players match the current filters.")
+        st.stop()
     dev["known_market_value"] = dev["market_value"]
     dev["bubble_size"] = dev["market_value"].fillna(0)
     if dev["bubble_size"].max() <= 0:
@@ -509,13 +521,17 @@ elif page == "Squad Movement":
     transitions = movement_filtered.dropna(subset=["previous_squad"])
     transitions = transitions.copy()
     transitions["movement_month"] = pd.to_datetime(transitions["observation_date"], errors="coerce").dt.to_period("M").astype(str)
+    transitions = transitions[transitions["movement_month"].ne("NaT")]
     month_counts = transitions.groupby("movement_month", as_index=False).size().rename(columns={"size": "movement_events"})
+    if month_counts.empty:
+        st.info("No squad transitions are available for the current filters.")
+        st.stop()
     selected_month = st.select_slider(
         "Movement Month",
         options=month_counts["movement_month"].tolist(),
         value=month_counts["movement_month"].max(),
     )
-    view_mode = st.segmented_control("Sankey View", ["Selected Month", "All Time"], default="Selected Month")
+    view_mode = st.radio("Sankey View", ["Selected Month", "All Time"], horizontal=True)
     sankey_source = transitions if view_mode == "All Time" else transitions[transitions["movement_month"].eq(selected_month)]
     st.plotly_chart(
         px.bar(
@@ -560,6 +576,9 @@ elif page == "Player 360":
     options = filtered["player_name"].sort_values().tolist()
     if query:
         options = [name for name in options if query.lower() in name.lower()]
+    if not options:
+        st.info("No players match the current filters or search.")
+        st.stop()
     selected_player = st.selectbox("Select Player", options)
     player = filtered[filtered["player_name"].eq(selected_player)].iloc[0]
     cols = st.columns(4)
@@ -582,6 +601,9 @@ elif page == "Player 360":
 
 elif page == "Pathways":
     pathway = filtered.groupby("pathway_outcome", as_index=False).size().rename(columns={"size": "players"}).sort_values("players", ascending=False)
+    if pathway.empty:
+        st.info("No pathway records match the current filters.")
+        st.stop()
     st.plotly_chart(px.bar(pathway, x="pathway_outcome", y="players", title="Known Pathway Outcomes"), use_container_width=True)
     st.dataframe(filtered[["player_name", "current_pathway", "pathway_outcome", "region", "entry_club", "highest_squad_level"]], use_container_width=True, hide_index=True)
 
@@ -595,8 +617,16 @@ elif page == "Women's Intelligence":
     with cols[2]:
         kpi("Black Queens Reference", fmt_number(len(black_queens)), "Not assumed RTD outcomes")
     left, right = st.columns(2)
-    left.plotly_chart(px.bar(female.groupby("region", as_index=False).size(), x="region", y="size", title="RTD Female Recruitment Geography"), use_container_width=True)
-    right.plotly_chart(px.bar(black_queens.groupby("region", as_index=False).size(), x="region", y="size", title="Black Queens Reference Landscape"), use_container_width=True)
+    female_regions = female.groupby("region", as_index=False).size()
+    black_queens_regions = black_queens.groupby("region", as_index=False).size()
+    if female_regions.empty:
+        left.info("No RTD female player records match the current filters.")
+    else:
+        left.plotly_chart(px.bar(female_regions, x="region", y="size", title="RTD Female Recruitment Geography"), use_container_width=True)
+    if black_queens_regions.empty:
+        right.info("No Black Queens reference records are available.")
+    else:
+        right.plotly_chart(px.bar(black_queens_regions, x="region", y="size", title="Black Queens Reference Landscape"), use_container_width=True)
     st.dataframe(black_queens, use_container_width=True, hide_index=True)
 
 elif page == "Recruitment Advisor":
@@ -604,6 +634,9 @@ elif page == "Recruitment Advisor":
         (source_effectiveness["source_type"].eq("region"))
         & (source_effectiveness["evidence_strength"].isin(["MODERATE", "STRONG"]))
     ].sort_values("recruitment_success_index", ascending=False)
+    if candidates.empty:
+        st.info("No recommendation candidates are available for the current filters.")
+        st.stop()
     for _, row in candidates.head(5).iterrows():
         insight(
             f"SCOUT MORE / PROTECT: {row['source_name']}",
@@ -615,6 +648,9 @@ elif page == "Recruitment Advisor":
 
 elif page == "Data Quality":
     quality = filtered.groupby("data_quality_class", as_index=False).size().rename(columns={"size": "players"})
+    if quality.empty:
+        st.info("No player records match the current filters.")
+        st.stop()
     st.plotly_chart(px.bar(quality, x="data_quality_class", y="players", color="data_quality_class", title="Player Data Quality Classification"), use_container_width=True)
     cols = st.columns(4)
     with cols[0]:
