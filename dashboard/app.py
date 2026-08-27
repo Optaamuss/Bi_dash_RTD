@@ -13,6 +13,8 @@ WAREHOUSE_PATH = ROOT / "warehouse" / "bi_system.sqlite"
 MARTS_DIR = ROOT / "data" / "marts"
 LOGO_PATH = ROOT / "assets" / "right_to_dream_logo.png"
 
+print("RTD dashboard startup: imports loaded", flush=True)
+
 BRAND = {
     "bg": "#050706",
     "surface": "#0b1512",
@@ -116,7 +118,7 @@ def add_theme() -> None:
             background: linear-gradient(180deg, #050706 0%, #0b1512 100%);
             border-right: 1px solid rgba(16,160,104,.28);
         }}
-        h1, h2, h3, h4, h5, h6, p, label, span, div {{
+        h1, h2, h3, h4, h5, h6, p, label {{
             letter-spacing: 0 !important;
             font-family: "Inter", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
         }}
@@ -332,6 +334,11 @@ summary = read_table("mart_dashboard_summary", warehouse_mtime)
 black_queens = read_table("mart_black_queens", warehouse_mtime)
 region_concentration = read_table("mart_region_concentration", warehouse_mtime)
 dim_squad = read_table("dim_squad", warehouse_mtime)
+
+print(
+    f"RTD dashboard startup: players={len(players)}, movement={len(movement)}, source_effectiveness={len(source_effectiveness)}",
+    flush=True,
+)
 
 if players.empty:
     st.warning("No warehouse data found. Run `python -m etl.load_raw` and `python -m etl.run_models` first.")
