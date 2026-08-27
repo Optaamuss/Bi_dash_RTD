@@ -1,20 +1,11 @@
 from pathlib import Path
 import sqlite3
-import subprocess
-import sys
 
 import pandas as pd
 import streamlit as st
-
-try:
-    import plotly.express as px
-    import plotly.graph_objects as go
-    import plotly.io as pio
-except ModuleNotFoundError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "plotly>=5.24.1"])
-    import plotly.express as px
-    import plotly.graph_objects as go
-    import plotly.io as pio
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
 
 
 ROOT = Path(__file__).resolve().parents[1]
