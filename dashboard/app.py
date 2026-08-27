@@ -16,18 +16,18 @@ LOGO_PATH = ROOT / "assets" / "right_to_dream_logo.png"
 print("RTD dashboard startup: imports loaded", flush=True)
 
 BRAND = {
-    "bg": "#050706",
-    "surface": "#0b1512",
-    "surface_2": "#10231d",
+    "bg": "#f5f6f8",
+    "surface": "#ffffff",
+    "surface_2": "#f0f7f4",
     "primary": "#10a068",
     "primary_dark": "#0b6f49",
-    "accent": "#f8f8f8",
+    "accent": "#111111",
     "green": "#5fe38b",
     "amber": "#ffbf47",
     "red": "#ff6b6b",
-    "text": "#f8f8f8",
-    "muted": "#aab8b1",
-    "border": "rgba(255,255,255,.08)",
+    "text": "#111111",
+    "muted": "#5f6b66",
+    "border": "rgba(17,17,17,.12)",
 }
 
 SQUAD_COLORS = {
@@ -96,203 +96,24 @@ def read_table(table_name: str, warehouse_mtime: float) -> pd.DataFrame:
 
 
 def add_theme() -> None:
-    st.markdown(
-        f"""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        :root {{
-            --rtd-green: {BRAND["primary"]};
-            --rtd-green-dark: {BRAND["primary_dark"]};
-            --rtd-black: {BRAND["accent"]};
-            --rtd-bg: {BRAND["bg"]};
-            --rtd-surface: {BRAND["surface"]};
-            --rtd-border: {BRAND["border"]};
-            --rtd-muted: {BRAND["muted"]};
-        }}
-        .stApp {{
-            background: {BRAND["bg"]};
-            color: {BRAND["text"]};
-            font-family: "Inter", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
-        }}
-        [data-testid="stSidebar"] {{
-            background: linear-gradient(180deg, #050706 0%, #0b1512 100%);
-            border-right: 1px solid rgba(16,160,104,.28);
-        }}
-        h1, h2, h3, h4, h5, h6, p, label {{
-            letter-spacing: 0 !important;
-            font-family: "Inter", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
-        }}
-        h1, h2, h3 {{
-            color: var(--rtd-black);
-            font-weight: 800;
-        }}
-        [data-testid="stSidebar"] img {{
-            display: block;
-            margin: 8px auto 18px auto;
-        }}
-        [data-testid="stSidebar"] h3 {{
-            color: var(--rtd-black);
-            font-size: 13px;
-            text-transform: uppercase;
-            border-top: 4px solid var(--rtd-green);
-            padding-top: 12px;
-        }}
-        [data-testid="stSidebar"] [role="radiogroup"] label {{
-            border-radius: 4px;
-            padding: 5px 8px;
-        }}
-        [data-testid="stSidebar"] [role="radiogroup"] label:hover {{
-            background: rgba(16,160,104,.16);
-        }}
-        [data-testid="stSidebar"] label, [data-testid="stSidebar"] .stCaption {{
-            color: var(--rtd-muted);
-        }}
-        .hero {{
-            padding: 18px 22px;
-            background: linear-gradient(135deg, rgba(16,160,104,.18), rgba(248,248,248,.04));
-            border-top: 5px solid var(--rtd-green);
-            border-left: 1px solid rgba(16,160,104,.32);
-            border-right: 1px solid rgba(16,160,104,.32);
-            border-bottom: 1px solid rgba(16,160,104,.32);
-            border-radius: 2px;
-            margin-bottom: 14px;
-            box-shadow: 0 1px 2px rgba(17, 17, 17, .05);
-        }}
-        .hero .brand {{
-            color: var(--rtd-green-dark);
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }}
-        .hero .title {{
-            color: {BRAND["text"]};
-            font-size: 26px;
-            font-weight: 850;
-            margin-top: 4px;
-        }}
-        .hero .question {{
-            color: {BRAND["muted"]};
-            font-size: 13px;
-            margin-top: 8px;
-        }}
-        .kpi {{
-            background: {BRAND["surface"]};
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 2px;
-            padding: 14px 15px;
-            min-height: 102px;
-            box-shadow: 0 1px 2px rgba(17, 17, 17, .05);
-        }}
-        .kpi .label {{
-            color: {BRAND["muted"]};
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }}
-        .kpi .value {{
-            color: {BRAND["text"]};
-            font-size: 27px;
-            font-weight: 850;
-            margin-top: 6px;
-        }}
-        .kpi .context {{
-            color: {BRAND["muted"]};
-            font-size: 11px;
-            margin-top: 8px;
-        }}
-        .insight {{
-            background: {BRAND["surface_2"]};
-            border: 1px solid rgba(255,255,255,.08);
-            border-left: 5px solid var(--rtd-green);
-            border-radius: 2px;
-            padding: 14px 16px;
-            margin: 10px 0;
-            box-shadow: 0 1px 2px rgba(17, 17, 17, .05);
-        }}
-        .tag {{
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 2px;
-            background: rgba(16,160,104,.20);
-            color: var(--rtd-green);
-            font-size: 10px;
-            font-weight: 800;
-            margin-right: 6px;
-        }}
-        .block-container {{
-            padding-top: 1.4rem;
-            padding-bottom: 2rem;
-            max-width: 1500px;
-        }}
-        [data-testid="stMetric"], [data-testid="stDataFrame"], .stPlotlyChart {{
-            background: {BRAND["surface"]};
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 2px;
-            padding: 8px;
-            box-shadow: 0 1px 2px rgba(17, 17, 17, .05);
-        }}
-        .stTabs [data-baseweb="tab-list"] {{
-            gap: 4px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-        }}
-        .stTabs [data-baseweb="tab"] {{
-            background: {BRAND["surface"]};
-            border: 1px solid rgba(255,255,255,.08);
-            border-bottom: none;
-            border-radius: 2px 2px 0 0;
-            padding: 8px 12px;
-            color: var(--rtd-muted);
-        }}
-        button[kind="primary"], .stButton > button {{
-            background: var(--rtd-green);
-            color: #ffffff;
-            border-radius: 2px;
-            border: 1px solid var(--rtd-green-dark);
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    return None
 
 
 def hero(page: str) -> None:
     question, context = PAGE_INTROS[page]
-    st.markdown(
-        f"""
-        <div class="hero">
-            <div class="brand">RIGHT TO DREAM TALENT INTELLIGENCE</div>
-            <div class="title">{page}</div>
-            <div class="question"><b>{question}</b><br>{context}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.caption("RIGHT TO DREAM TALENT INTELLIGENCE")
+    st.title(page)
+    st.markdown(f"**{question}**")
+    st.caption(context)
+    st.divider()
 
 
 def kpi(label: str, value: str, context: str = "") -> None:
-    st.markdown(
-        f"""
-        <div class="kpi">
-            <div class="label">{label}</div>
-            <div class="value">{value}</div>
-            <div class="context">{context}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.metric(label, value, help=context or None)
 
 
 def insight(title: str, fact: str, interpretation: str, recommendation: str) -> None:
-    st.markdown(
-        f"""
-        <div class="insight">
-            <span class="tag">FACT</span><b>{title}</b><br>{fact}<br><br>
-            <span class="tag">INTERPRETATION</span>{interpretation}<br><br>
-            <span class="tag">RECOMMENDATION</span>{recommendation}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.info(f"**{title}**\n\n**Fact:** {fact}\n\n**Interpretation:** {interpretation}\n\n**Recommendation:** {recommendation}")
 
 
 def fmt_number(value: float) -> str:
